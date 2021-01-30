@@ -1,0 +1,99 @@
+var NoMotion = !Vector.HasMotion(This.Motion);
+var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
+if (NoMotion&&Block) {
+  var flowLeft = Math.random()>0.5;
+  if (flowLeft) {
+    var Relative = [new Vector(-1,1),new Vector(1,1)];
+  } else {
+    var Relative = [new Vector(1,1),new Vector(-1,1)];
+  }
+
+  var Obj = Powder.Api.Elements.MoveElementByAir(This.Position,Relative);
+
+  if (!Obj) {
+    Obj2 = Powder.Api.Elements.MoveElementByDensity(This.Position,This.constructor.Density,Relative);
+  }
+
+}
+
+
+
+OLD ElEMENT:
+
+
+//If object has zero motion AND if object has no air space underneath
+var NoMotion = !Vector.HasMotion(This.Motion);
+var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
+if (NoMotion&&Block) {
+  if ( !Powder.Api.Elements.IsInsideElement(This.Position.x-1,This.Position.y+1) ) {
+    This.Position.x -= 1;
+    This.Position.y += 1;
+  } else if ( !Powder.Api.Elements.IsInsideElement(This.Position.x+1,This.Position.y+1) ) {
+    This.Position.x += 1;
+    This.Position.y += 1;
+  }
+
+}
+
+
+
+WATER ELEM (OLD):
+
+var NoMotion = !Vector.HasMotion(This.Motion);
+var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
+if (NoMotion&&Block) {
+  var flowLeft = Math.random()>=0.5;
+
+  if ( !Powder.Api.Elements.IsInsideElement(This.Position.x-1,This.Position.y+1) ) {
+    This.Position.x -= 1;
+    This.Position.y += 1;
+  } else if ( !Powder.Api.Elements.IsInsideElement(This.Position.x+1,This.Position.y+1) ) {
+    This.Position.x += 1;
+    This.Position.y += 1;
+  } else if (flowLeft) {//FLOW STUFF IDK WATER JUST READ THE CODE YOURSELF INSTAD OF MY INSANITY
+
+
+
+    if ( !Powder.Api.Elements.IsInsideElement(This.Position.x-1,This.Position.y) ) {//Left-Right behavior
+      if (!This.constructor.Properties.ExtraFlow) {
+        This.Position.x -= 1;
+      } else {
+        This.Motion.x = -This.constructor.Properties.Flow;
+      }
+
+    } else if ( !Powder.Api.Elements.IsInsideElement(This.Position.x+1,This.Position.y) ) {
+      if (!This.constructor.Properties.ExtraFlow) {
+        This.Position.x += 1;
+      } else {
+        This.Motion.x = This.constructor.Properties.Flow;
+      }
+
+    }
+
+
+
+  } else {
+
+
+
+    if ( !Powder.Api.Elements.IsInsideElement(This.Position.x+1,This.Position.y) ) {//Left-Right behavior
+      if (!This.constructor.Properties.ExtraFlow) {
+        This.Position.x += 1;
+      } else {
+        This.Motion.x = This.constructor.Properties.Flow;
+      }
+
+    } else if ( !Powder.Api.Elements.IsInsideElement(This.Position.x-1,This.Position.y) ) {
+      if (!This.constructor.Properties.ExtraFlow) {
+        This.Position.x -= 1;
+      } else {
+        This.Motion.x = -This.constructor.Properties.Flow;
+      }
+
+    }
+
+
+
+  }
+//end
+}

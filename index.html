@@ -1,0 +1,54 @@
+<select id="SelectedElement" value="Dust">
+<option value="Remove">Remove</option>
+<option value="Dust">Dust</option>
+<option value="Solid">Solid</option>
+<option value="Liquid">Liquid</option>
+<option value="Wire">Wire</option>
+<option value="Spark">Spark</option>
+<option value="Sand">Sand</option>
+</select>
+<br>
+<canvas id="Canvas" width=1000 height=1000></canvas>
+<script>var Draw = Canvas.getContext('2d');
+
+</script>
+
+
+<script src="powder.js"></script>
+
+
+<script src="api/elements.js"></script>
+
+<script defer>
+  function Test() {
+    var d = Powder.Api.Elements.Type.Dust;
+    var s = Powder.Api.Elements.Type.Solid;
+    //Powder.Objects = [new s(0,5)];
+    for (var i = 0; i < 20; i++) {
+      Powder.Objects = Powder.Objects.concat(new s(i,7));
+    }
+  }
+  Test();
+
+  var Keyboard = {};
+  onkeypress = onkeyup = function (e) {
+    if (e.type=="keyup") {
+      Keyboard[e.key] = false;
+    } else {
+      Keyboard[e.key] = true;
+    }
+  }
+
+  function Add(x,v) {
+    if (!v) {
+    var d = Powder.Api.Elements.Type.Wire;
+  } else {var d = Powder.Api.Elements.Type.Spark}
+    Powder.Objects = Powder.Objects.concat(new d(x,0));
+  }
+
+</script>
+<button onclick="setInterval(Powder.Update,1000/30);">set</button>
+<button onclick="Powder.Update()">Run</button>
+
+<iframe id="Insert">
+</iframe>
