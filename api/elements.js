@@ -65,7 +65,11 @@ Powder.Api.Elements.MoveElementByDensity = function (Pos,Density,Relative) {
     var Obj = Relative[i];
     var x = Powder.Api.Elements.GetElement(Pos.x+Obj.x,Pos.y+Obj.y);
     if (x) {
-      if (x.Object.constructor.Density<Density) {Pos.x += Obj.x;Pos.y += Obj.y;x.Object.Position.x -= Obj.x;x.Object.Position.y -= Obj.y;x.LoopIndex = i;return x;}
+      if (x.Object.constructor.Density<Density) {
+        if (Powder.Api.Elements.IsInvalidPosition(Pos.x+Obj.x,Pos.y+Obj.y) ) {return false;}
+        Pos.x += Obj.x;Pos.y += Obj.y;x.Object.Position.x -= Obj.x;x.Object.Position.y -= Obj.y;x.LoopIndex = i;return x;
+
+      }
     }
 
   }
@@ -77,6 +81,8 @@ Powder.Api.Elements.MoveElementByAir = function (Pos,Relative) {
     var Obj = Relative[i];
     var x = Powder.Api.Elements.GetElement(Pos.x+Obj.x,Pos.y+Obj.y);
     if (!x) {
+      var invalid = Powder.Api.Elements.IsInvalidPosition(Pos.x+Obj.x,Pos.y+Obj.y);
+      if (invalid) {return false;}
       Pos.x += Obj.x;
       Pos.y += Obj.y;
       return x;
@@ -181,6 +187,9 @@ Powder.Api.Elements.Type.Liquid = class Liquid extends Powder.Api.Elements.Type.
   static MaxGravity = 4;
   static Color = ["aqua"];
   static UpdateLiquid(This) {
+    var NoMotion = !Vector.HasMotion(This.Motion);
+    var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
+    if ( !(NoMotion&&Block) ) {return false;}
     var flowLeft = Math.random()>0.5;
     var Relative = [new Vector(1,0),new Vector(-1,0)];
     if (flowLeft) {Relative = [new Vector(-1,0),new Vector(1,0)];}

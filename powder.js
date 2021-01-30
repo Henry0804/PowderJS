@@ -316,7 +316,6 @@ Powder.Motion = function () {
     }
   });
 
-  return;
   Powder.Objects.forEach((Obj, i) => {
     /*if (Obj.Position.x<0) {Obj.Position.x = 0;}
     if (Obj.Position.x>500) {Obj.Position.x = 500;}
