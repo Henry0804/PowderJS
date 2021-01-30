@@ -3,8 +3,8 @@ Powder.Api.Elements = {};
 
 Powder.Api.Elements.IsInsideElement = function (x,y) {
   //var Out = false;
-  var invalid = Powder.Api.Elements.IsInvalidPosition(new Vector(x,y));
-  if (invalid) {return true;}
+  //var invalid = Powder.Api.Elements.IsInvalidPosition(new Vector(x,y));
+  //if (invalid) {return true;}
   //Powder.Objects.forEach((Obj, i) => {
     //var equal = Obj.Position.x==x&&Obj.Position.y==y;
     //if (equal) {return true;}
@@ -17,7 +17,7 @@ Powder.Api.Elements.IsInsideElement = function (x,y) {
   //return Out;
   return false;
 }
-Powder.Api.Elements.IsInvalidPosition = function (Pos) {//returns true if an invalid position is found.
+Powder.Api.Elements.IsInvalidPosition = function (x,y) {//returns true if an invalid position is found.
   if (Pos.x<0) {return true;}
   if (Pos.x>Powder.AreaWidth) {return true;}
   if (Pos.y<0) {return true;}
@@ -66,8 +66,14 @@ Powder.Api.Elements.MoveElementByDensity = function (Pos,Density,Relative) {
     var x = Powder.Api.Elements.GetElement(Pos.x+Obj.x,Pos.y+Obj.y);
     if (x) {
       if (x.Object.constructor.Density<Density) {
-        if (Powder.Api.Elements.IsInvalidPosition(Pos.x+Obj.x,Pos.y+Obj.y) ) {return false;}
-        Pos.x += Obj.x;Pos.y += Obj.y;x.Object.Position.x -= Obj.x;x.Object.Position.y -= Obj.y;x.LoopIndex = i;return x;
+        if (Powder.Api.Elements.IsInvalidPosition(Pos.x+Obj.x,Pos.y+Obj.y) ) {break;}
+        Pos.x += Obj.x;
+        Pos.y += Obj.y;
+
+        x.Object.Position.x -= Obj.x;
+        x.Object.Position.y -= Obj.y;
+        x.LoopIndex = i;
+        return x;
 
       }
     }
@@ -79,13 +85,13 @@ Powder.Api.Elements.MoveElementByDensity = function (Pos,Density,Relative) {
 Powder.Api.Elements.MoveElementByAir = function (Pos,Relative) {
   for (var i = 0; i < Relative.length; i++) {
     var Obj = Relative[i];
-    var x = Powder.Api.Elements.GetElement(Pos.x+Obj.x,Pos.y+Obj.y);
+    var x = Powder.Api.Elements.IsInsideElement(Pos.x+Obj.x,Pos.y+Obj.y);
     if (!x) {
       var invalid = Powder.Api.Elements.IsInvalidPosition(Pos.x+Obj.x,Pos.y+Obj.y);
-      if (invalid) {return false;}
+      if (invalid) {break;}
       Pos.x += Obj.x;
       Pos.y += Obj.y;
-      return x;
+      return true;
     }
 
   }
@@ -99,22 +105,22 @@ unstatic int State
 
 */
 
-//ELEM=Dust
-Powder.Api.Elements.Type.Dust = class Dust {//Average dust element PROBLEM: What order should elements update?
+//ELEM=Powder
+Powder.Api.Elements.Type.Powder = class Powder {//Average Powder element PROBLEM: What order should elements update?
   constructor(x,y) {
     this.Position = new Vector(x,y);
     this.Motion = new Vector(0,0);
     this.CurrentMotion = new Vector(0,0);
     this.CurrentColor = 0;
   }
-  static Name = "Dust";//Just the name
+  static Name = "Powder";//Just the name
   static Type = "Default";//Type for scripts, ex, CUSTOM, NORMAL bla.
   static Group = "";//Menu data
 
-  static Density = 0.72;//0.72, this is very light dust
+  static Density = 0.72;//0.72, this is very light Powder
   static MaxGravity = 4;
   static Color = ["brown"];
-  static UpdateDust(This) {
+  static UpdatePowder(This) {
     var NoMotion = !Vector.HasMotion(This.Motion);
     var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
     if (NoMotion&&Block) {
@@ -124,20 +130,20 @@ Powder.Api.Elements.Type.Dust = class Dust {//Average dust element PROBLEM: What
       } else {
         var Relative = [new Vector(1,1),new Vector(-1,1)];
       }
-
-      var Obj = Powder.Api.Elements.MoveElementByAir(This.Position,Relative);
-      var Obj2 = false;
-      if (!Obj) {
+      var MovedToAir = false;
+      MovedToAir = Powder.Api.Elements.MoveElementByAir(This.Position,Relative);
+      var MovedToParticle = false;
+      if (!MovedToAir) {
         Relative.unshift(new Vector(0,1));
-        Obj2 = Powder.Api.Elements.MoveElementByDensity(This.Position,This.constructor.Density,Relative);
+        MovedToParticle = Powder.Api.Elements.MoveElementByDensity(This.Position,This.constructor.Density,Relative);
       }
-      if (Obj||Obj2) {return true;}
+      if (MovedToAir||MovedToParticle) {return true;}
       return false;
     }
     return false;
   }
   static Update(This) {
-    this.UpdateDust(This);
+    this.UpdatePowder(This);
   }
 
 
@@ -146,8 +152,8 @@ Powder.Api.Elements.Type.Dust = class Dust {//Average dust element PROBLEM: What
 }
 
 
-//ELEM=Dust
-Powder.Api.Elements.Type.Solid = class Solid {//Average dust element PROBLEM: What order should elements update?
+//ELEM=Powder
+Powder.Api.Elements.Type.Solid = class Solid {//Average Powder element PROBLEM: What order should elements update?
   constructor(x,y) {
     this.Position = new Vector(x,y);
     this.Motion = new Vector(0,0);
@@ -160,7 +166,7 @@ Powder.Api.Elements.Type.Solid = class Solid {//Average dust element PROBLEM: Wh
 
   }
   static Color = ["black"];
-  static Name = "Dust";//Just the name
+  static Name = "Solid";//Just the name
   static Type = "Default";//Type for scripts, ex, CUSTOM, NORMAL bla.
   static Group = "";//Menu data
 }
@@ -168,7 +174,7 @@ Powder.Api.Elements.Type.Solid = class Solid {//Average dust element PROBLEM: Wh
 
 
 //ELEM=Liquid
-Powder.Api.Elements.Type.Liquid = class Liquid extends Powder.Api.Elements.Type.Dust{//Average water element
+Powder.Api.Elements.Type.Liquid = class Liquid extends Powder.Api.Elements.Type.Powder{//Average water element
   Density = 1;//1
   constructor(x,y) {
     super(x,y);
@@ -203,7 +209,7 @@ Powder.Api.Elements.Type.Liquid = class Liquid extends Powder.Api.Elements.Type.
     return false;
   }
   static Update(This) {
-    var hasMoved = this.UpdateDust(This);
+    var hasMoved = this.UpdatePowder(This);
     if (!hasMoved) {this.UpdateLiquid(This);}
   }
 
@@ -311,9 +317,10 @@ Powder.Api.Elements.Type.Spark = class Spark {
 
 
 
+//Custom elements:
+//These will be moved elsewhere someday
 
-
-Powder.Api.Elements.Type.Sand = class Sand extends Powder.Api.Elements.Type.Dust {//Average dust element PROBLEM: What order should elements update?
+Powder.Api.Elements.Type.Sand = class Sand extends Powder.Api.Elements.Type.Powder {//Average Powder element PROBLEM: What order should elements update?
   constructor(x,y) {
     super(x,y);
     this.Position = new Vector(x,y);
@@ -321,7 +328,7 @@ Powder.Api.Elements.Type.Sand = class Sand extends Powder.Api.Elements.Type.Dust
     this.CurrentMotion = new Vector(0,0);
     this.CurrentColor = 0;
   }
-  static Name = "Dust";//Just the name
+  static Name = "Sand";//Just the name
   static Type = "Default";//Type for scripts, ex, CUSTOM, NORMAL bla.
   static Group = "";//Menu data
 
@@ -329,10 +336,22 @@ Powder.Api.Elements.Type.Sand = class Sand extends Powder.Api.Elements.Type.Dust
   static MaxGravity = 4;
   static Color = ["#DEB887"];
   static Update(This) {
-    this.UpdateDust(This);
+    //this.UpdatePowder(This);
   }
 
 
 
 
 }
+
+
+
+///FOR PRESSURE SIM:
+/*
+REd tile disperses to other tiles around it.
+then bla bla bla.
+Red becomes blue
+Tiles around blue become red.
+easy.
+
+*/

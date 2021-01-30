@@ -93,6 +93,13 @@ Powder.Update = function () {
     Powder.Motion();
     //Powder.Density();
     Powder.PartUpdate();
+    Powder.Objects.forEach((Obj, i) => {
+      /*if (Obj.Position.x<0) {Obj.Position.x = 0;}
+      if (Obj.Position.x>500) {Obj.Position.x = 500;}
+      if (Obj.Position.y<0) {Obj.Position.y = 0;}
+      if (Obj.Position.y>50) {Obj.Position.y = 50;}*/
+      //if (Powder.Api.Elements.IsInvalidPosition(Obj.Position) ) {Powder.Objects.splice(i,1);}//Remove object.
+    });
     Powder.Step = false;
   }
   Powder.Render();
@@ -169,7 +176,7 @@ Powder.Motion2 = function () {//Calc particle velocity
     if (Obj.Position.x>500) {Obj.Position.x = 500;}
     if (Obj.Position.y<0) {Obj.Position.y = 0;}
     if (Obj.Position.y>50) {Obj.Position.y = 50;}*/
-    if (Powder.Api.Elements.IsInvalidPosition(Obj.Position) ) {Powder.Objects.pop(i);}//Remove object.
+    if (Powder.Api.Elements.IsInvalidPosition(Obj.Position.x,Obj.Position.y) ) {Powder.Objects.pop(i);}//Remove object.
   });
 
 }
@@ -299,12 +306,14 @@ Powder.Motion = function () {
       if (mY<0) {AddY -= 1;}
       //Collision
       var Inside = Powder.Api.Elements.IsInsideElement(pX+AddX,pY+AddY);
+      var Invalid = Powder.Api.Elements.IsInvalidPosition(pX+AddX,pY+AddY);
 
       var HasMotion = Vector.HasMotion( new Vector(mX - AddX,mY - AddY) );
 
-      if (!HasMotion&&!Inside) {Obj.Position.x = pX+AddX;Obj.Position.y = pY+AddY;Active = false;}
+      if (!HasMotion&&!Inside&&!Invalid) {Obj.Position.x = pX+AddX;Obj.Position.y = pY+AddY;Active = false;}
 
-      if (Inside) {
+
+      if (Inside||Invalid) {
         if (mX>0) {AddX -= 1;}
         if (mX<0) {AddX += 1;}
         if (mY>0) {AddY -= 1;}
@@ -316,13 +325,6 @@ Powder.Motion = function () {
     }
   });
 
-  Powder.Objects.forEach((Obj, i) => {
-    /*if (Obj.Position.x<0) {Obj.Position.x = 0;}
-    if (Obj.Position.x>500) {Obj.Position.x = 500;}
-    if (Obj.Position.y<0) {Obj.Position.y = 0;}
-    if (Obj.Position.y>50) {Obj.Position.y = 50;}*/
-    if (Powder.Api.Elements.IsInvalidPosition(Obj.Position) ) {Powder.Objects.pop(i);}//Remove object.
-  });
 }
 
 
