@@ -1,15 +1,16 @@
 <select id="SelectedElement" value="Dust">
 <option value="Remove">Remove</option>
-<option value="Dust">Dust</option>
+<option value="Powder">Powder</option>
 <option value="Solid">Solid</option>
 <option value="Liquid">Liquid</option>
 <option value="Wire">Wire</option>
 <option value="Spark">Spark</option>
-<option value="Sand">Sand</option>
+<option value="Sand">Sand (Obsolete)</option>
 </select>
 <br>
 <canvas id="Canvas" width=1000 height=1000></canvas>
-<script>var Draw = Canvas.getContext('2d');
+<script>
+var Draw = Canvas.getContext('2d');
 
 </script>
 
@@ -18,6 +19,7 @@
 
 
 <script src="api/elements.js"></script>
+<script src="api/air.js"></script>
 
 <script defer>
   function Test() {

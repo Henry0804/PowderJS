@@ -247,6 +247,8 @@ Powder.Control = function () {
   var y = f(Powder.Mouse.offsetY/incH)-off.y;
   //Draw.fillRect(Math.floor(Powder.Mouse.offsetX/incW)*incW,Math.floor(Powder.Mouse.offsetY/incH)*incH,incW,incH);
   var isInside = Powder.Api.Elements.IsInsideElement(x,y);
+  var invalid = Powder.Api.Elements.IsInvalidPosition(x,y);
+  if (invalid) {return;}
   if (!isInside&&Powder.Mouse.buttons&&se!="Remove") {
     var e = Powder.Api.Elements.Type.GetElement(se);
     if (e) {

@@ -18,10 +18,10 @@ Powder.Api.Elements.IsInsideElement = function (x,y) {
   return false;
 }
 Powder.Api.Elements.IsInvalidPosition = function (x,y) {//returns true if an invalid position is found.
-  if (Pos.x<0) {return true;}
-  if (Pos.x>Powder.AreaWidth) {return true;}
-  if (Pos.y<0) {return true;}
-  if (Pos.y>Powder.AreaHeight) {return true;}
+  if (x<0) {return true;}
+  if (x>Powder.AreaWidth) {return true;}
+  if (y<0) {return true;}
+  if (y>Powder.AreaHeight) {return true;}
   return false;
 }
 Powder.Api.Elements.GetElement = function (x,y) {
@@ -122,7 +122,7 @@ Powder.Api.Elements.Type.Powder = class Powder {//Average Powder element PROBLEM
   static Color = ["brown"];
   static UpdatePowder(This) {
     var NoMotion = !Vector.HasMotion(This.Motion);
-    var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
+    var Block = window.Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
     if (NoMotion&&Block) {
       var flowLeft = Math.random()>0.5;
       if (flowLeft) {
@@ -131,11 +131,11 @@ Powder.Api.Elements.Type.Powder = class Powder {//Average Powder element PROBLEM
         var Relative = [new Vector(1,1),new Vector(-1,1)];
       }
       var MovedToAir = false;
-      MovedToAir = Powder.Api.Elements.MoveElementByAir(This.Position,Relative);
+      MovedToAir = window.Powder.Api.Elements.MoveElementByAir(This.Position,Relative);
       var MovedToParticle = false;
       if (!MovedToAir) {
         Relative.unshift(new Vector(0,1));
-        MovedToParticle = Powder.Api.Elements.MoveElementByDensity(This.Position,This.constructor.Density,Relative);
+        MovedToParticle = window.Powder.Api.Elements.MoveElementByDensity(This.Position,This.constructor.Density,Relative);
       }
       if (MovedToAir||MovedToParticle) {return true;}
       return false;
@@ -336,7 +336,7 @@ Powder.Api.Elements.Type.Sand = class Sand extends Powder.Api.Elements.Type.Powd
   static MaxGravity = 4;
   static Color = ["#DEB887"];
   static Update(This) {
-    //this.UpdatePowder(This);
+    this.UpdatePowder(This);
   }
 
 
