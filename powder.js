@@ -256,7 +256,7 @@ Powder.Cursor = {Type:"Square",Size:1};
 Powder.Control = function () {
   if (Powder.Wheel.deltaY!=0&&Powder.Wheel.HasUpdated) {
     Powder.Wheel.HasUpdated = false;
-    Powder.Cursor.Size = Powder.Cursor.Size + Powder.Wheel.deltaY/-Powder.Wheel.deltaY;
+    if (Powder.Wheel.deltaY>0) {Powder.Cursor.Size--;} else {Powder.Cursor.Size++;}
     if (Powder.Cursor.Size<0) {Powder.Cursor.Size = 0;}
   }
   var se = SelectedElement.value;//Selected Element
