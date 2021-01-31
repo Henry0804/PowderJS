@@ -256,7 +256,8 @@ Powder.Cursor = {Type:"Square",Size:1};
 Powder.Control = function () {
   if (Powder.Wheel.deltaY!=0&&Powder.Wheel.HasUpdated) {
     Powder.Wheel.HasUpdated = false;
-    Powder.Cursor.Size = Math.abs(Powder.Cursor.Size + Powder.Wheel.deltaY/-100);
+    Powder.Cursor.Size = Powder.Cursor.Size + Powder.Wheel.deltaY/-100;
+    if (Powder.Cursor.Size<0) {Powder.Cursor.Size = 0;}
   }
   var se = SelectedElement.value;//Selected Element
   var z = 1-Powder.Render.Zoom;
