@@ -254,11 +254,16 @@ while (Active) {
 var sendToVideo = false;//This does nothing (:
 Powder.Cursor = {Type:"Square",Size:1};
 Powder.Control = function () {
-  if (Powder.Wheel.deltaY!=0&&Powder.Wheel.HasUpdated) {
-    Powder.Wheel.HasUpdated = false;
+  if (Powder.Wheel.HasUpdated&&!Keyboard.z) {
     if (Powder.Wheel.deltaY>0) {Powder.Cursor.Size--;} else {Powder.Cursor.Size++;}
     if (Powder.Cursor.Size<0) {Powder.Cursor.Size = 0;}
   }
+  if (Keyboard.z&&Powder.Wheel.HasUpdated) {
+    if (Powder.Wheel.deltaY>0) {
+      Powder.Render.Zoom -= 0.01;
+    } else {Powder.Render.Zoom += 0.01;}
+  }
+  Powder.Wheel.HasUpdated = false;
   var se = SelectedElement.value;//Selected Element
   var z = 1-Powder.Render.Zoom;
   var incW = Powder.Width/(Powder.AreaWidth*z);
