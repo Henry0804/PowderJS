@@ -3,11 +3,28 @@ var Powder = {};
 Powder.Paused = false;
 Powder.Step = false;
 Powder.Api = {};
-Canvas.onmousemove = function (e) {Powder.Mouse = e;}
-Canvas.onmousedown = function (e) {Powder.Mouse = e;}
-Canvas.onmouseup = function (e) {Powder.Mouse = e;}
-Powder.Mouse = {};
 
+Canvas.onpointermove = function (e) {
+  Powder.Mouse = e;
+  if (Powder.MouseLock) {
+    console.info(Powder.MouseX);
+    Powder.MouseX += e.movementX;
+    Powder.MouseY += e.movementY;
+  } else {
+    Powder.MouseX = e.offsetX;
+    Powder.MouseY = e.offsetY;
+  }
+}
+Canvas.onpointerdown = Canvas.onpointermove;
+Canvas.onpointerup = Canvas.onpointermove;
+Canvas.onwheel = function (e) {Powder.Wheel = e;Powder.Wheel.HasUpdated = true;e.preventDefault();}
+document.onpointerlockchange = function (e) {if (document.pointerLockElement) {Powder.MouseLock = true} else {Powder.MouseLock = false;}}
+Powder.Mouse = {};
+Powder.Wheel = {};
+Powder.MouseLock = false;
+
+Powder.MouseX = 0;
+Powder.MouseY = 0;
 
 
 //Vector Class
@@ -62,9 +79,9 @@ Powder.Render = function () {
    Draw.fillRect(Obj.Position.x*incW+o.x*incW,Obj.Position.y*incH+o.y*incH,incW,incH);
   });
   //Render cursor
-  Draw.fillStyle = "red";
+  if (SelectedElement.value=="Remove") {Draw.fillStyle = "red";} else {Draw.fillStyle = "blue";}
   Draw.globalAlpha = 0.5;
-  Draw.fillRect(Math.floor(Powder.Mouse.offsetX/incW)*incW,Math.floor(Powder.Mouse.offsetY/incH)*incH,incW,incH);
+  Draw.fillRect(Math.floor(Powder.MouseX/incW)*incW-incW*Powder.Cursor.Size,Math.floor(Powder.MouseY/incH)*incH-incH*Powder.Cursor.Size,incW*(Powder.Cursor.Size*2+1),incH*(Powder.Cursor.Size*2+1) );
   Draw.globalAlpha = 1;
 
   Draw.strokeStyle = "gray";
@@ -235,32 +252,55 @@ while (Active) {
   if (Calls>=MaxCalls) {Active = false;}
 }*/
 var sendToVideo = false;//This does nothing (:
-
+Powder.Cursor = {Type:"Square",Size:1};
 Powder.Control = function () {
+  if (Powder.Wheel.deltaY!=0&&Powder.Wheel.HasUpdated) {
+    Powder.Wheel.HasUpdated = false;
+    Powder.Cursor.Size = Math.abs(Powder.Cursor.Size + Powder.Wheel.deltaY/-100);
+  }
   var se = SelectedElement.value;//Selected Element
   var z = 1-Powder.Render.Zoom;
   var incW = Powder.Width/(Powder.AreaWidth*z);
   var incH = Powder.Height/(Powder.AreaHeight*z);
   var f = Math.floor;
   var off = Powder.Render.Offset;
-  var x = f(Powder.Mouse.offsetX/incW)-off.x;
-  var y = f(Powder.Mouse.offsetY/incH)-off.y;
-  //Draw.fillRect(Math.floor(Powder.Mouse.offsetX/incW)*incW,Math.floor(Powder.Mouse.offsetY/incH)*incH,incW,incH);
-  var isInside = Powder.Api.Elements.IsInsideElement(x,y);
-  var invalid = Powder.Api.Elements.IsInvalidPosition(x,y);
-  if (invalid) {return;}
-  if (!isInside&&Powder.Mouse.buttons&&se!="Remove") {
+  var x = f(Powder.MouseX/incW)-off.x;
+  var y = f(Powder.MouseY/incH)-off.y;
+  //Draw.fillRect(Math.floor(Powder.MouseX/incW)*incW,Math.floor(Powder.MouseY/incH)*incH,incW,incH);
+  //var isInside = Powder.Api.Elements.IsInsideElement(x,y);
+  //var invalid = Powder.Api.Elements.IsInvalidPosition(x,y);
+  //if (invalid) {return;}
+  if (Powder.Mouse.buttons==1&&se!="Remove") {
     var e = Powder.Api.Elements.Type.GetElement(se);
     if (e) {
-      var n = new e(x,y);
-      Powder.Objects = Powder.Objects.concat(n);
+      var Objs = [];
+      var Size = Powder.Cursor.Size;
+      for (var x2 = -Size;x2 < Size+1;x2++) {
+        for (var y2 = -Size;y2 < Size+1;y2++) {
+          var isInside = Powder.Api.Elements.IsInsideElement(x+x2,y+y2);
+          var invalid = Powder.Api.Elements.IsInvalidPosition(x+x2,y+y2);
+          if (!isInside&&!invalid) {
+            Objs = Objs.concat(new e(x+x2,y+y2) );
+          }
+
+        }
+      }
+      //var n = new e(x,y);
+      Powder.Objects = Powder.Objects.concat(Objs);
     }
   }
 
-  if (isInside&&Powder.Mouse.buttons&&se=="Remove") {
-    var e = Powder.Api.Elements.GetElement(x,y);
-    if (e) {
-      Powder.Objects.splice(e.Index,1);
+  if (Powder.Mouse.buttons==1&&se=="Remove") {
+    var Size = Powder.Cursor.Size;
+    for (var x2 = -Size;x2 < Size+1;x2++) {
+      for (var y2 = -Size;y2 < Size+1;y2++) {
+        var element = Powder.Api.Elements.GetElement(x+x2,y+y2);
+        var invalid = Powder.Api.Elements.IsInvalidPosition(x+x2,y+y2);
+        if (element&&!invalid) {
+          Powder.Objects.splice(element.Index,1);
+        }
+
+      }
     }
 
   }
@@ -400,3 +440,13 @@ Powder.Density = function () {
 
 }
 // NOTE: UPDATE: Make gravity directional, for exmaple blocks can fall up or diagnal
+
+//Fast element inside glitch checker:
+/*
+Powder.Objects.forEach(function (o) {
+Powder.Objects.forEach(function (e) {
+if (o.Position.x==e.Position.x&&o.Position.y==e.Position.y) {console.info("ohno");}
+});
+
+});
+*/
