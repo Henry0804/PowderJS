@@ -3,6 +3,10 @@ Powder.Api.Air = class Air {
     this.Motion = new Vector(0,0);
     this.Pressure = 0;
   }
+  static DissapationMultiplier = 1;
+  static PressureMultiplier = 0.5;
+  static VelocityTransfer = 0.5;
+  static CornerMultiplier = (1/2)*(1/4);
   static Update() {
     //Four ajacnet cells.
     for (var x = 1;x < Powder.AreaWidth-1;x++) {
@@ -24,82 +28,84 @@ Powder.Api.Air = class Air {
           b[x+1][y],
           b[x][y+1]
         ];
-        var Nearbs = [
-          b[x-1][y-1],
-          b[x][y-1],
-          b[x+1][y-1],
-          b[x-1][y],
-          b[x][y],
-          b[x+1][y],
-          b[x-1][y-1],
-          b[x][y-1],
-          b[x+1][y-1]
-        ]
-        var Nearas = [
-          a[x-1][y-1],
-          a[x][y-1],
-          a[x+1][y-1],
-          a[x-1][y],
-          a[x][y],
-          a[x+1][y],
-          a[x-1][y-1],
-          a[x][y-1],
-          a[x+1][y-1]
-        ]
-        var PressureDif = [
+
+        var PressureDiff = [
           Obj.Pressure-Neara[0].Pressure,
           Obj.Pressure-Neara[1].Pressure,
           Obj.Pressure-Neara[2].Pressure,
           Obj.Pressure-Neara[3].Pressure
         ];
-        var PressureDifs = [
-          Obj.Pressure-Nearas[0].Pressure,
-          Obj.Pressure-Nearas[1].Pressure,
-          Obj.Pressure-Nearas[2].Pressure,
-          Obj.Pressure-Nearas[3].Pressure,
-          Obj.Pressure-Nearas[4].Pressure,//no
-          Obj.Pressure-Nearas[5].Pressure,
-          Obj.Pressure-Nearas[6].Pressure,
-          Obj.Pressure-Nearas[7].Pressure,
-          Obj.Pressure-Nearas[8].Pressure,
-        ]
-        //Up 1
-        var m = 16;
-        var allP = PressureDif[0] + PressureDif[1] + PressureDif[2] + PressureDif[3];
-        //ObjB.Motion.x = ObjB.Motion.x + PressureDif[3];
-        //ObjB.Motion.y = ObjB.Motion.y + PressureDif[2];
 
+        var allP = PressureDiff[0] + PressureDiff[1] + PressureDiff[2] + PressureDiff[3];
+
+        var p = this.PressureMultiplier;
+        var c = this.CornerMultiplier;
         //up 1
-        Nearb[0].Motion.x = Nearb[0].Motion.x + PressureDif[0]/m;
-        Nearb[0].Motion.y = Nearb[0].Motion.y + PressureDif[0]/m;
+        /*
+        Nearb[0].Motion.x = Nearb[0].Motion.x + PressureDiff[0]*p;
+        Nearb[0].Motion.y = Nearb[0].Motion.y + PressureDiff[0]*p;
         //Left 1
-        Nearb[1].Motion.x = Nearb[1].Motion.x + PressureDif[1]/m;
-        Nearb[1].Motion.y = Nearb[1].Motion.y + PressureDif[1]/m;
+        Nearb[1].Motion.x = Nearb[1].Motion.x + PressureDiff[1]*p;
+        Nearb[1].Motion.y = Nearb[1].Motion.y + PressureDiff[1]*p;
         //Right 1
-        Nearb[2].Motion.x = Nearb[2].Motion.x + PressureDif[2]/m;
-        Nearb[2].Motion.y = Nearb[2].Motion.y + PressureDif[2]/m;
+        Nearb[2].Motion.x = Nearb[2].Motion.x + PressureDiff[2]*p;
+        Nearb[2].Motion.y = Nearb[2].Motion.y + PressureDiff[2]*p;
         //Down 1
-        Nearb[3].Motion.x = Nearb[3].Motion.x + PressureDif[3]/m;
-        Nearb[3].Motion.y = Nearb[3].Motion.y + PressureDif[3]/m;
+        Nearb[3].Motion.x = Nearb[3].Motion.x + PressureDiff[3]*p;
+        Nearb[3].Motion.y = Nearb[3].Motion.y + PressureDiff[3]*p;
+*/
+        var f = Math.floor;
+        //Calc pressure.
+        var Value = Obj.Pressure;
+        var Split = (Value*p)/4;
+        //Split += Obj.Motion.y/50;
+        //Split += Obj.Motion.x/50;
+        Nearb[0].Pressure += Split;
+        Nearb[1].Pressure += Split;
+        Nearb[2].Pressure += Split;
+        Nearb[3].Pressure += Split;
+        ObjB.Pressure -= Split*4;
 
+        var Value2 = Obj.Pressure;
+        Split = (Value2/4);
+        var lx = Math.round(Obj.Motion.x)+x;
+        var ly = Math.round(Obj.Motion.y)+x;
+        if (lx<0||ly<0||ly>200||lx>200) {} else {
+          b[lx][ly].Pressure += Split;
+        }
 
-      }
+        //ObjB.Pressure = -ObjB.Pressure;
+        //Use existing velocity to move the air particle's pressure:
+        //currentPressure * VelocityTransferConstant is added to cell realative to some vector.
+
+        //Calc motion.
+        ObjB.Motion.x = 0;
+        ObjB.Motion.y = 0;
+
+        function clamp(a,Max,Min) {
+          var o = 0;
+          if (a>Max) {o = Max;}
+          if (a<Min) {o = Min;}
+          if (o==0) {return a;} else {return o;}
+        }
+        ObjB.Motion.y += Obj.Pressure-Neara[0].Pressure;
+        ObjB.Motion.y += Obj.Pressure-Neara[3].Pressure;
+        ObjB.Motion.x += Obj.Pressure-Neara[1].Pressure;
+        ObjB.Motion.x += Obj.Pressure-Neara[2].Pressure;
+        }
 
     }
-
     //Pressure stuff calc.
-    for (var x = 1;x < Powder.AreaWidth-1;x++) {
+    /*for (var x = 1;x < Powder.AreaWidth-1;x++) {
       for (var y = 1;y < Powder.AreaHeight-1;y++) {
-        //Pressure Calc.
-        //Pressure = Pressure - vector stuff
-        var Obj = Powder.Air[x][y];
-        var Value = Obj.Motion.x;
-        Value += Obj.Motion.y;
-        Value += Obj.Pressure;
 
-        Powder.AirBuffer[x][y].Pressure = Value;
+        var a = Math.abs;
+        var Obj = Powder.Air[x][y];
+        var ObjB = Powder.AirBuffer[x][y];
+        //Vector calculation
+
       }
-    }
+    }*/
     Powder.Air = Powder.Api.Air.Clone(Powder.AirBuffer);
     //end
   }
@@ -153,6 +159,28 @@ function AirRender() {
         Draw.fillStyle = "rgb(0,0,"+a(f(o.Pressure*m))+")";
       }
       Draw.fillRect(x*val,y*val,val,val);
+      Draw.fillStyle = "white";
+      if (!(o.Motion.x==0&&o.Motion.y==0)) {
+        Draw.fillRect((o.Motion.x+x)*val,(o.Motion.y+y)*val,val,val);
+      }
     }
   }
 }
+
+
+/*
+Air sim:
+Fist implement smoothing function and store that in pressure.
+A direction vector is generated based on adding the direction of cells too vectors as well as the cell's vectors themselves.
+Then allow air cells to transfer pressure away using the vector they have
+
+
+*/
+
+
+/*
+ObjB.Motion.y -= f(Obj.Pressure-Neara[0].Pressure);
+ObjB.Motion.y += f(Obj.Pressure-Neara[3].Pressure);
+ObjB.Motion.x -= f(Obj.Pressure-Neara[1].Pressure);
+ObjB.Motion.x += f(Obj.Pressure-Neara[2].Pressure);
+*/

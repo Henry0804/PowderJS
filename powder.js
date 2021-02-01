@@ -95,6 +95,28 @@ Powder.Render = function () {
       }
     }
   }
+  var f = Math.floor;
+  var a = Math.abs;
+  if (false) {
+  var al = 50
+
+  Powder.Air.forEach((Obj2, x) => {
+    Obj2.forEach((Obj, y) => {
+      var p = Obj.Pressure;
+      if (p>0) {
+        if (p>255) {p = 255;}
+        Draw.fillStyle = "rgba("+f(p)+",0,0,"+al+")";
+      } else if (p<0) {
+        if (p<-255) {p = -255;}
+        Draw.fillStyle = "rgba(0,0,"+a(f(p))+","+al+")";
+      } else {Draw.fillStyle = "rgba(255,255,255,"+al+")";}
+      Draw.fillRect(x*incW+o.x*incW,y*incH+o.y*incH,incW,incH);
+    });
+
+  });
+
+  }
+
 
 }
 
@@ -107,6 +129,7 @@ Powder.Render.Offset = new Vector(0,0);
 Powder.Update = function () {
   Powder.Control();
   if (!Powder.Paused|Powder.Step) {
+    Powder.Api.Air.Update();
     Powder.Motion();
     //Powder.Density();
     Powder.PartUpdate();
@@ -121,6 +144,9 @@ Powder.Update = function () {
   }
   Powder.Render();
 }
+Powder.Config = {
+  UpdateAir:true
+};
 
 
 
@@ -132,125 +158,9 @@ Powder.PartUpdate = function () {
 
 }
 
-Powder.Motion2 = function () {//Calc particle velocity
-  //return
-  //Apply gravity
-  var Active = true;
 
 
 
-  Powder.Objects.forEach((Obj, i) => {
-    if (Obj.constructor.MaxGravity>Obj.Motion.y) {
-    Obj.Motion.y += Powder.Options.Gravity;
-    }
-  });
-
-//Current slow motion function:
-
-/*
-1. For each particle with motion...
-2. Step once for that particle and check if inside stuff.
-3. This function expands with each new particle
-
-
-*/
-
-  //More Motion/gravity/move objects.
-  var MaxCalls = 200;
-  var Calls = 0;
-
-  Powder.Objects.forEach((Obj, i) => {
-    Obj.CurrentMotion.x = Obj.Motion.x;
-    Obj.CurrentMotion.y = Obj.Motion.y;
-  });
-
-
-  while (Active) {
-    var ParticleHasMotion = false;
-    Powder.Objects.forEach((Obj, i) => {
-      var v = new Vector(Obj.CurrentMotion.x,Obj.CurrentMotion.y);
-      if (Vector.HasMotion(v) ) {ParticleHasMotion = true;
-        var AddX = 0;
-        var AddY = 0;
-        if (Obj.CurrentMotion.x>0) {AddX = 1;} if (Obj.CurrentMotion.x<0) {AddX = -1;}
-        if (Obj.CurrentMotion.y>0) {AddY = 1;} if (Obj.CurrentMotion.y<0) {AddY = -1;}
-
-        //Check if object is inside other object.
-        var IsInsideElem = Powder.Api.Elements.IsInsideElement(Obj.Position.x+AddX,Obj.Position.y+AddY);
-
-        if (!IsInsideElem) {Obj.Position.x += AddX;Obj.Position.y += AddY;Obj.CurrentMotion.x -= AddX;Obj.CurrentMotion.y -= AddY;} else {Obj.Motion.x = 0;Obj.Motion.y = 0;}
-      }
-    });
-    if (!ParticleHasMotion) {Active = false;}
-    Calls++;
-    if (Calls>=MaxCalls) {Active = false;}
-  }
-
-
-
-  Powder.Objects.forEach((Obj, i) => {
-    /*if (Obj.Position.x<0) {Obj.Position.x = 0;}
-    if (Obj.Position.x>500) {Obj.Position.x = 500;}
-    if (Obj.Position.y<0) {Obj.Position.y = 0;}
-    if (Obj.Position.y>50) {Obj.Position.y = 50;}*/
-    if (Powder.Api.Elements.IsInvalidPosition(Obj.Position.x,Obj.Position.y) ) {Powder.Objects.pop(i);}//Remove object.
-  });
-
-}
-
-
-/*
-Origional Motion Function
-Powder.Objects.forEach((Obj, i) => {
-  var Active = true;
-  var XPlus = true;
-  var YPlus = true;
-  if (Obj.Position.x<0) {XPlus = false;}
-  if (Obj.Position.y<0) {YPlus = false;}
-  //XPlus is true when x is positive
-  var AddX = 0;
-  var AddY = 0;
-  while (Active) {
-    if (Obj.Motion.x) {
-      if (XPlus) {AddX++;} else {AddX--;}
-    }
-
-    if (Obj.Motion.y) {
-      if (YPlus) {AddY++;} else {AddY--;}
-    }
-
-  }
-});
-*/
-
-
-//original motion from the motion function:
-/*var StoredMotion = [];
-Powder.Objects.forEach((Obj, i) => {
-  StoredMotion[i] = {x:0,y:0};
-});
-var MaxCalls = 200;
-var Calls = 0;
-while (Active) {
-  ParticleHasMotion = false;
-  Powder.Objects.forEach((Obj, i) => {
-    var v = new Vector(Obj.Motion.x+StoredMotion[i].x,Obj.Motion.y+StoredMotion[i].y);
-    if (Vector.HasMotion(v) ) {ParticleHasMotion = true;
-      var AddX = 0;
-      var AddY = 0;
-      if (Obj.Motion.x+StoredMotion[i].x>0) {AddX = 1;} if (Obj.Motion.x+StoredMotion[i].x<0) {AddX = -1;}
-      if (Obj.Motion.y+StoredMotion[i].y>0) {AddY = 1;} if (Obj.Motion.y+StoredMotion[i].y<0) {AddY = -1;}
-
-      //Check if object is inside other object.
-      var IsInsideElem = Powder.Api.Elements.IsInsideElement(Obj.Position.x+AddX,Obj.Position.y+AddY);
-
-      if (!IsInsideElem) {Obj.Position.x += AddX;Obj.Position.y += AddY;StoredMotion[i].x -= AddX;StoredMotion[i].y -= AddY;} else {Obj.Motion.x = 0;Obj.Motion.y = 0;}
-    }
-  });
-  if (!ParticleHasMotion) {Active = false;}
-  Calls++;
-  if (Calls>=MaxCalls) {Active = false;}
-}*/
 var sendToVideo = false;//This does nothing (:
 Powder.Cursor = {Type:"Square",Size:1};
 Powder.Control = function () {
@@ -322,6 +232,16 @@ Powder.Control = function () {
 
 Powder.Motion = function () {
   //Apply gravity
+  Powder.Air.forEach((Obj2, x) => {
+    Obj2.forEach((Obj, y) => {
+      var e = Powder.Api.Elements.GetElement(x,y);
+      if (e) {
+        e.Object.Motion.x += Obj.Motion.x;
+        e.Object.Motion.y += Obj.Motion.y;
+      }
+    });
+
+  });
 
 
 
