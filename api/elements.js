@@ -191,7 +191,7 @@ Powder.Api.Elements.Type.Liquid = class Liquid extends Powder.Api.Elements.Type.
   static Density = 1;//1 for 1 CM 3 of water
 
   static MaxGravity = 4;
-  static Color = ["aqua"];
+  static Color = ["aqua","lightblue"];
   static UpdateLiquid(This) {
     var NoMotion = !Vector.HasMotion(This.Motion);
     var Block = Powder.Api.Elements.IsInsideElement(This.Position.x,This.Position.y+1);
@@ -282,26 +282,30 @@ Powder.Api.Elements.Type.Spark = class Spark {
   static MaxGravity = 0;
   static Color = ["yellow","blue"];
   static Update(This) {
-    for (var x = -1; x < 1; x++) {
-      for (var y = -1; y < 1; y++) {
-        var e = Powder.Api.Elements.Type.GetElement(This.Position.x+x,This.Position.y+y);
-        if (e) {
-          if(e.Object.constructor.Name=="Wire") {
-            Powder.Objects[e.Index] = new Powder.Api.Elements.Type.Spark(x,y);
-            Powder.Objects[e.Index].CType = "Wire";
+    if (This.Life>=1) {
+      for (var x = -1; x <= 1; x++) {
+        for (var y = -1; y <= 1; y++) {
+          var e = Powder.Api.Elements.GetElement(This.Position.x+x,This.Position.y+y);
+          if (e) {
+            if(e.Object.constructor.Name=="Wire") {
+              Powder.Objects[e.Index] = new Powder.Api.Elements.Type.Spark(x+This.Position.x,y+This.Position.y);
+              Powder.Objects[e.Index].CType = "Wire";
+            } else if (e.Object.constructor.Name=="Liquid") {
+              e.Object.CurrentColor = 1;
+            }
+
           }
 
         }
-
       }
     }
     if (This.Life>=1) {
       This.Life--;
     } else {
-      if (This.CType=="Remove") {var e = Powder.Api.Elements.GetElement(This.Position.x,This.Position.y);Powder.Objects.pop(e.Index);} else {
-        //var e = Powder.Api.Elements.GetElement(This.Position.x,This.Position.y);
+      if (This.CType=="Remove") {var e = Powder.Api.Elements.GetElement(This.Position.x,This.Position.y);Powder.Objects.splice(e.Index,1);} else {
+        var e2 = Powder.Api.Elements.GetElement(This.Position.x,This.Position.y);
         var e = Powder.Api.Elements.Type.GetElement(This.CType);
-        Powder.Objects[e.Index] = new e();
+        Powder.Objects[e2.Index] = new e(This.Position.x,This.Position.y);
       }
 
 
@@ -343,6 +347,9 @@ Powder.Api.Elements.Type.Sand = class Sand extends Powder.Api.Elements.Type.Powd
 
 
 }
+
+
+
 
 
 

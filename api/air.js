@@ -3,14 +3,21 @@ Powder.Api.Air = class Air {
     this.Motion = new Vector(0,0);
     this.Pressure = 0;
   }
-  static DissapationMultiplier = 1;
-  static PressureMultiplier = 0.5;
-  static VelocityTransfer = 0.5;
+  //static DissapationMultiplier = 1;
+  static PressureMultiplier = 0.5;//0.50
+  static VelocityTransfer = 1;//0.50
   static CornerMultiplier = (1/2)*(1/4);
   static Update() {
+    var r = Math.round;
+    function clamp(a,Max,Min) {
+      var o = 0;
+      if (a>Max) {o = Max;}
+      if (a<Min) {o = Min;}
+      if (o==0) {return a;} else {return o;}
+    }
     //Four ajacnet cells.
-    for (var x = 1;x < Powder.AreaWidth-1;x++) {
-      for (var y = 1;y < Powder.AreaHeight-1;y++) {
+    for (var y = 1;y < Powder.AreaHeight-1;y++) {
+      for (var x = 1;x < Powder.AreaWidth-1;x++) {
         //For each particle
         var Obj = Powder.Air[x][y];
         var ObjB = Powder.AirBuffer[x][y];
@@ -66,34 +73,65 @@ Powder.Api.Air = class Air {
         Nearb[3].Pressure += Split;
         ObjB.Pressure -= Split*4;
 
-        var Value2 = Obj.Pressure;
-        Split = (Value2/4);
-        var lx = Math.round(Obj.Motion.x)+x;
-        var ly = Math.round(Obj.Motion.y)+x;
-        if (lx<0||ly<0||ly>200||lx>200) {} else {
+
+
+        }
+
+    }
+    for (var y = 1;y < Powder.AreaHeight-1;y++) {
+      for (var x = 1;x < Powder.AreaWidth-1;x++) {
+        //Calc motion:
+        var ObjB = Powder.AirBuffer[x][y];
+        var Obj = Powder.Air[x][y];
+        var a = Powder.Air;
+        var b = Powder.AirBuffer;
+
+        //ObjB.Motion.x = 0;
+        //ObjB.Motion.y = 0;
+
+
+
+        /*ObjB.Motion.y += (Obj.Pressure-Neara[0].Pressure);
+        ObjB.Motion.y += (Obj.Pressure-Neara[3].Pressure);
+
+        ObjB.Motion.x += (Obj.Pressure-Neara[1].Pressure);
+        ObjB.Motion.x += (Obj.Pressure-Neara[2].Pressure);
+*/
+        //if (x==100&&y==100) {debugger;}
+
+
+        var vx = 0;
+        var vy = 0;
+        vy -= (ObjB.Pressure-b[x][y-1].Pressure);//-=
+        vy += (ObjB.Pressure-b[x][y+1].Pressure);//+=
+
+        vx -= (ObjB.Pressure-b[x-1][y].Pressure);//-=
+        vx += (ObjB.Pressure-b[x+1][y].Pressure);//+=
+
+        ObjB.Motion.y += r(clamp(vy,1,-1));
+
+        ObjB.Motion.x += r(clamp(vx,1,-1));
+
+
+
+
+      }
+    }
+
+
+    for (var y = 1;y < Powder.AreaHeight-1;y++) {
+      for (var x = 1;x < Powder.AreaWidth-1;x++) {
+        var Value = Obj.Pressure;
+        var Split = (Value)*this.VelocityTransfer;
+        var lx = (Obj.Motion.x)+x;
+        var ly = (Obj.Motion.y)+x;
+
+        if (r(Obj.Motion.x)!=0&&r(Obj.Motion.y)!=0) {} else {
           b[lx][ly].Pressure += Split;
+          ObjB.Pressure -= Split;
         }
 
-        //ObjB.Pressure = -ObjB.Pressure;
-        //Use existing velocity to move the air particle's pressure:
-        //currentPressure * VelocityTransferConstant is added to cell realative to some vector.
-
-        //Calc motion.
-        ObjB.Motion.x = 0;
-        ObjB.Motion.y = 0;
-
-        function clamp(a,Max,Min) {
-          var o = 0;
-          if (a>Max) {o = Max;}
-          if (a<Min) {o = Min;}
-          if (o==0) {return a;} else {return o;}
-        }
-        ObjB.Motion.y += Obj.Pressure-Neara[0].Pressure;
-        ObjB.Motion.y += Obj.Pressure-Neara[3].Pressure;
-        ObjB.Motion.x += Obj.Pressure-Neara[1].Pressure;
-        ObjB.Motion.x += Obj.Pressure-Neara[2].Pressure;
-        }
-
+      }
     }
     //Pressure stuff calc.
     /*for (var x = 1;x < Powder.AreaWidth-1;x++) {
@@ -159,9 +197,9 @@ function AirRender() {
         Draw.fillStyle = "rgb(0,0,"+a(f(o.Pressure*m))+")";
       }
       Draw.fillRect(x*val,y*val,val,val);
-      Draw.fillStyle = "white";
-      if (!(o.Motion.x==0&&o.Motion.y==0)) {
-        Draw.fillRect((o.Motion.x+x)*val,(o.Motion.y+y)*val,val,val);
+      Draw.fillStyle = "rgba(100,100,100,25)";
+      if (!(Math.round(o.Motion.x)==0&&Math.round(o.Motion.y)==0)) {
+        //Draw.fillRect(Math.round(o.Motion.x+x)*val,Math.round(o.Motion.y+y)*val,val,val);
       }
     }
   }

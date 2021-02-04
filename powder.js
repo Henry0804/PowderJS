@@ -7,7 +7,7 @@ Powder.Api = {};
 Canvas.onpointermove = function (e) {
   Powder.Mouse = e;
   if (Powder.MouseLock) {
-    console.info(Powder.MouseX);
+    //console.info(Powder.MouseX);
     Powder.MouseX += e.movementX;
     Powder.MouseY += e.movementY;
   } else {
@@ -129,17 +129,17 @@ Powder.Render.Offset = new Vector(0,0);
 Powder.Update = function () {
   Powder.Control();
   if (!Powder.Paused|Powder.Step) {
-    Powder.Api.Air.Update();
+    //Powder.Api.Air.Update();
     Powder.Motion();
     //Powder.Density();
     Powder.PartUpdate();
-    Powder.Objects.forEach((Obj, i) => {
+    //Powder.Objects.forEach((Obj, i) => {
       /*if (Obj.Position.x<0) {Obj.Position.x = 0;}
       if (Obj.Position.x>500) {Obj.Position.x = 500;}
       if (Obj.Position.y<0) {Obj.Position.y = 0;}
       if (Obj.Position.y>50) {Obj.Position.y = 50;}*/
       //if (Powder.Api.Elements.IsInvalidPosition(Obj.Position) ) {Powder.Objects.splice(i,1);}//Remove object.
-    });
+    //});
     Powder.Step = false;
   }
   Powder.Render();
